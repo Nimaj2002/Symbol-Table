@@ -9,49 +9,68 @@
 #include "./Enviroment/Enviroment.h"
 using namespace std;
 
-// ------------------------------------
-const int TOKENSIZE = 8;
-// Token types
-enum TokenType
+//-------------------------------/  GRAMMER  /--------------------------------/
+
+/*
+main		-> beginEnd
+beginEnd	-> 'begin' rest0 'end'
+rest0		-> decls block | block
+block		-> '{' decls stmts '}'
+decls		-> rest1
+rest1		-> decl rest1 | none
+decl		-> type id
+stmts		-> rest2
+rest2		-> stmt rest2 | none
+stmt		-> block | factor ';'
+factor		-> id
+*/
+
+//---------------------------/  GLOBAL VARIABLES  /---------------------------/
+
+const int TOKENSIZE = 8; // Buffer size
+enum TokenType			 // Token types
 {
-	BEGIN,
-	END,
+	BEGIN,		 // 'begin'
+	END,		 // 'end'
 	KEYWORD,	 // int, char, float, bool
 	PUNCTUATION, // {, }, ;,
 	IDENTIFIERS, // variables
 	ENDOFFILE,
 };
-// Token structure
-struct Token
+struct Token // Token structure
 {
 	TokenType id;
 	string lexeme;
 };
-// storing tokens
-deque<Token> TOKENS;
-Token cToken;
+deque<Token> TOKENS; // storing tokens
+Token cToken;		 // Current Token
 
 ifstream File;
 int blockNumber, errorCode;
 int lineNumber = 1;
-Env *ptrTop;
-// ------------------------------------
+
+Env *ptrTop; // pointer to the topest enviroment(symbol table)
+deque<Env *> symbolTable;
+
+//------------------------/  FUNCTION DECLARATIONS  /------------------------/
 
 void detectError(int errorCode);
 bool isCharNum(char ch);
 void tokenLoader();
-void beginEnd();
 Token topToken();
 void popToken();
+void beginEnd();
+void rest0();
 void block();
 void decls();
+void rest1();
 void decl();
 void stmts();
+void rest2();
 void stmt();
 void factor();
-void rest0();
-void rest1();
-void rest2();
+
+//----------------------------------------------------------------------------/
 
 int main(int argc, char *argv[])
 {
@@ -69,15 +88,12 @@ int main(int argc, char *argv[])
 		cerr << "Error\nfile format should be .magic: " << endl;
 		exit(EXIT_FAILURE); // Return an error code
 	}
+
 	File.open(filePath);
+	// main	-> beginEnd
 	beginEnd();
-	// while (cToken.id != ENDOFFILE)
-	// {
-	// 	cToken = topToken();
-	// 	cout << cToken.id << " -- " << cToken.lexeme << endl;
-	// 	popToken();
-	// }
 	File.close();
+
 	return 0;
 }
 
@@ -123,26 +139,27 @@ void detectError(int errorNumber)
 }
 bool isCharNum(char ch)
 {
+	// checks if the character is not a punctuation mark
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_') || (ch >= '0' && ch <= '9');
 }
 string toLowercase(const string &input)
 {
+	// returns the lowercase of the input string
 	string result = input;
-
 	transform(result.begin(), result.end(), result.begin(), [](unsigned char c)
 			  { return tolower(c); });
 	return result;
 }
 void tokenLoader()
 {
-	// detecting if file has finished
-	if ((!TOKENS.empty()) && (TOKENS.back().id == ENDOFFILE))
+	// fills the deque with tokens
+	if ((!TOKENS.empty()) && (TOKENS.back().id == ENDOFFILE)) // detecting if file has finished
 	{
 		return;
 	}
 	while (TOKENS.size() <= 1)
 	{
-		// checking if file has finished (double check in order to be sure while wont crash)
+		// checking if file has finished (double check in order to be sure 'while' wont crash)
 		detectError(3);
 		if (3 == errorCode)
 		{
@@ -153,8 +170,8 @@ void tokenLoader()
 			return;
 		}
 
-		char head = File.get();
-		switch (head)
+		char head = File.get(); // gets a char from the file
+		switch (head)			// checking type of each char and saving token in deque
 		{
 		case '\n':
 			lineNumber++;
@@ -203,14 +220,14 @@ void tokenLoader()
 			TOKENS.push_back(token);
 			break;
 		}
-		case '/':
+		case '/': // detecting the comments
 		{
 			head = File.get();
 			switch (head) // checking if comment is // or /* */
 			{
 			case '/': // comment type is //
 			{
-				do // skipps everything until \n
+				do // skips everything until \n
 				{
 					head = File.get();
 					if ('\n' == head)
@@ -225,7 +242,7 @@ void tokenLoader()
 			case '*': // coment type is /*
 			caseStar:
 			{
-				do // skipps everything until *
+				do // skips everything until *
 				{
 					head = File.get();
 					if ('\n' == head)
@@ -264,7 +281,7 @@ void tokenLoader()
 				detectError(1);
 				return;
 			}
-			else
+			else // saving tokens based on the TOKENSIZE
 			{
 				Token token;
 				token.lexeme = "";
@@ -274,7 +291,7 @@ void tokenLoader()
 					head = File.get();
 					if (isCharNum(head))
 					{
-						if (TOKENSIZE - 1 == i) // checking if words does not surpass the TOKENSIZE
+						if (TOKENSIZE - 1 == i) // checking if word does not surpass the TOKENSIZE
 						{
 							detectError(1);
 							return;
@@ -290,27 +307,31 @@ void tokenLoader()
 						{ // saving the word as:
 							if (("bool" == toLowercase(token.lexeme)) || ("int" == toLowercase(token.lexeme)) || ("float" == toLowercase(token.lexeme)) || ("char" == toLowercase(token.lexeme)))
 							{
-								token.lexeme = toLowercase(token.lexeme);
+								// token is keyword
+								token.lexeme = toLowercase(token.lexeme); // saving lower case
 								token.id = KEYWORD;
 							}
 							else if ("begin" == toLowercase(token.lexeme))
 							{
-								token.lexeme = toLowercase(token.lexeme);
+								// token is 'begin'
+								token.lexeme = toLowercase(token.lexeme); // saving lower case
 								token.id = BEGIN;
 							}
 							else if ("end" == toLowercase(token.lexeme))
 							{
-								token.lexeme = toLowercase(token.lexeme);
+								// token is 'end'
+								token.lexeme = toLowercase(token.lexeme); // saving lower case
 								token.id = END;
 							}
 							else
 							{
-								token.id = IDENTIFIERS; // variables
+								// token is identifier
+								token.id = IDENTIFIERS;
 							}
 							TOKENS.push_back(token);
 						}
 
-						{ // checking the type of head
+						{ // checking the next character of the file (following char of the last token)
 							if ('\n' == head)
 							{
 								lineNumber++;
@@ -372,7 +393,7 @@ void tokenLoader()
 								{
 								case '/':
 								{
-									do // skipps everything until \n
+									do // skips everything until \n
 									{
 										head = File.get();
 										if ('\n' == head)
@@ -404,7 +425,7 @@ void tokenLoader()
 										goto caseStar2;
 									}
 								}
-								default:
+								default: // checking end of file
 									detectError(3);
 									break;
 								}
@@ -427,6 +448,7 @@ void tokenLoader()
 }
 Token topToken()
 {
+	// returns the first token availible
 returnToken:
 {
 	if (!TOKENS.empty())
@@ -443,6 +465,7 @@ returnToken:
 }
 void popToken()
 {
+	// delets the first availible token
 tokenpoper:
 {
 	if (!TOKENS.empty())
@@ -468,20 +491,21 @@ tokenpoper:
 }
 void beginEnd()
 {
-	cToken = topToken();
+	// beginEnd	-> 'begin' rest0 'end'
+	cToken = topToken(); // finding 'begin'
 	if (BEGIN != cToken.id)
 	{
 		detectError(1);
 	}
 	else
 	{
-		Env top;
+		Env top; // semantic actions
 		ptrTop = &top;
 		cout << "begin ";
 		popToken();
-		rest0();
+		rest0(); // rest0
 	}
-	cToken = topToken(); // finding end
+	cToken = topToken(); // finding 'end'
 	if (END != cToken.id)
 	{
 		detectError(1);
@@ -495,6 +519,7 @@ void beginEnd()
 }
 void rest0()
 {
+	// rest0 -> decls block | block
 	cToken = topToken();
 	if (KEYWORD == cToken.id)
 	{
@@ -510,6 +535,7 @@ void rest0()
 }
 void block()
 {
+	// block -> '{' decls stmts '}'
 	cToken = topToken();
 	if (PUNCTUATION != cToken.id && "{" != cToken.lexeme)
 	{
@@ -517,7 +543,7 @@ void block()
 	}
 	else
 	{
-		cout << "{ ";
+		cout << "{ "; // '{'
 		popToken();
 		blockNumber++;
 
@@ -543,10 +569,10 @@ void block()
 		if ((PUNCTUATION == cToken.id))
 		{
 
-			if ("}" == cToken.lexeme)
+			if ("}" == cToken.lexeme) // '}'
 			{
 				popToken();
-				// blockNumber--;
+				// TODO save the data inside the Enviroment
 				ptrTop = saved;
 				cout << "} ";
 				return;
@@ -562,11 +588,13 @@ void block()
 
 void decls()
 {
+	// decls -> rest1
 	rest1();
 	return;
 }
 void rest1()
 {
+	// rest1 -> decl rest1 | none
 	cToken = topToken();
 	if (KEYWORD == cToken.id)
 	{
@@ -581,22 +609,24 @@ void rest1()
 }
 void decl()
 {
+	// decl -> type id
 	cToken = topToken();
 	if (KEYWORD == cToken.id)
 	{
 		if ("bool" == cToken.lexeme)
 		{
-			popToken();
+			popToken(); // pops bool
 			cToken = topToken();
 
-			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
+			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checks if there exists another id with another type
 			{
 				detectError(1);
 			}
+			ptrTop->put(toLowercase(cToken.lexeme), BOOL); // saving toke in the enviroment
 
-			ptrTop->put(toLowercase(cToken.lexeme), BOOL);
 			popToken();
 			cToken = topToken();
+
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
 				detectError(1);
@@ -616,10 +646,11 @@ void decl()
 			{
 				detectError(1);
 			}
-
 			ptrTop->put(toLowercase(cToken.lexeme), INT);
+
 			popToken();
 			cToken = topToken();
+
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
 				detectError(1);
@@ -639,10 +670,11 @@ void decl()
 			{
 				detectError(1);
 			}
-
 			ptrTop->put(toLowercase(cToken.lexeme), FLOAT);
+
 			popToken();
 			cToken = topToken();
+
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
 				detectError(1);
@@ -662,10 +694,11 @@ void decl()
 			{
 				detectError(1);
 			}
-
 			ptrTop->put(toLowercase(cToken.lexeme), CHAR);
+
 			popToken();
 			cToken = topToken();
+
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
 				detectError(1);
@@ -681,11 +714,13 @@ void decl()
 
 void stmts()
 {
+	// stmts -> rest2
 	rest2();
 	return;
 }
 void rest2()
 {
+	// rest2 -> stmt rest2 | none
 	cToken = topToken();
 	if ((IDENTIFIERS == cToken.id) || ("{" == cToken.lexeme) || (";" == cToken.lexeme))
 	{
@@ -700,18 +735,19 @@ void rest2()
 }
 void stmt()
 {
+	// stmt	-> block | factor ';'
 	cToken = topToken();
-	if ("{" == cToken.lexeme)
+	if ("{" == cToken.lexeme) // block
 	{
 		block();
 		return;
 	}
-	else if (";" == cToken.lexeme)
+	else if (";" == cToken.lexeme) // handeling alone ';' without any declaration
 	{
 		popToken();
 		return;
 	}
-	else if (IDENTIFIERS == cToken.id)
+	else if (IDENTIFIERS == cToken.id) // factor
 	{
 		factor();
 		return;
@@ -719,9 +755,11 @@ void stmt()
 }
 void factor()
 {
+	// factor -> id
 	cToken = topToken();
 	popToken();
-	if ((";" == topToken().lexeme) || ("+" == topToken().lexeme) || ("-" == topToken().lexeme))
+
+	if ((";" == topToken().lexeme) || ("+" == topToken().lexeme) || ("-" == topToken().lexeme)) // handeling +/-
 	{
 		Symbol sym = ptrTop->get(toLowercase(cToken.lexeme));
 		switch (sym)
@@ -752,6 +790,7 @@ void factor()
 			break;
 		}
 	}
+
 	if (";" != topToken().lexeme)
 	{
 		detectError(1);
