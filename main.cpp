@@ -712,12 +712,7 @@ void factor()
 {
 	cToken = topToken();
 	popToken();
-	if (";" != topToken().lexeme)
-	{
-		cout << "18" << endl;
-		detectError(1);
-	}
-	else
+	if (";" == topToken().lexeme)
 	{
 		Symbol sym = ptrTop->get(cToken.lexeme);
 		switch (sym)
@@ -726,30 +721,37 @@ void factor()
 			cout << cToken.lexeme << ":"
 				 << "bool"
 				 << "; ";
-			popToken();
-			return;
+			break;
 		case FLOAT:
 			cout << cToken.lexeme << ":"
 				 << "float"
 				 << "; ";
-			popToken();
-			return;
+			break;
 		case INT:
 			cout << cToken.lexeme << ":"
 				 << "int"
 				 << "; ";
-			popToken();
-			return;
+			break;
 		case CHAR:
 			cout << cToken.lexeme << ":"
 				 << "char"
 				 << "; ";
-			popToken();
-			return;
+			break;
 		case null:
 			cout << cToken.lexeme << ":";
 			detectError(2);
+			break;
 		}
 	}
+	else if (";" != topToken().lexeme)
+	{
+		cout << "18" << endl;
+		detectError(1);
+	}
+	else
+	{
+		popToken();
+	}
+
 	return;
 }
