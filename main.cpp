@@ -125,6 +125,14 @@ bool isCharNum(char ch)
 {
 	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_') || (ch >= '0' && ch <= '9');
 }
+string toLowercase(const string &input)
+{
+	string result = input;
+
+	transform(result.begin(), result.end(), result.begin(), [](unsigned char c)
+			  { return tolower(c); });
+	return result;
+}
 void tokenLoader()
 {
 	// detecting if file has finished
@@ -260,7 +268,7 @@ void tokenLoader()
 			{
 				Token token;
 				token.lexeme = "";
-				token.lexeme += tolower(head);
+				token.lexeme += head;
 				for (int i = 1; i < TOKENSIZE; i++)
 				{
 					head = File.get();
@@ -273,23 +281,26 @@ void tokenLoader()
 						}
 						else
 						{
-							token.lexeme += tolower(head);
+							token.lexeme += head;
 						}
 					}
 					else // saving token then checking the following char of token
 					// this process may result in at least one or two token in TOKENS
 					{
 						{ // saving the word as:
-							if (("bool" == token.lexeme) || ("int" == token.lexeme) || ("float" == token.lexeme) || ("char" == token.lexeme))
+							if (("bool" == toLowercase(token.lexeme)) || ("int" == toLowercase(token.lexeme)) || ("float" == toLowercase(token.lexeme)) || ("char" == toLowercase(token.lexeme)))
 							{
+								token.lexeme = toLowercase(token.lexeme);
 								token.id = KEYWORD;
 							}
-							else if ("begin" == token.lexeme)
+							else if ("begin" == toLowercase(token.lexeme))
 							{
+								token.lexeme = toLowercase(token.lexeme);
 								token.id = BEGIN;
 							}
-							else if ("end" == token.lexeme)
+							else if ("end" == toLowercase(token.lexeme))
 							{
+								token.lexeme = toLowercase(token.lexeme);
 								token.id = END;
 							}
 							else
@@ -578,12 +589,12 @@ void decl()
 			popToken();
 			cToken = topToken();
 
-			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
 			}
 
-			ptrTop->put(cToken.lexeme, BOOL);
+			ptrTop->put(toLowercase(cToken.lexeme), BOOL);
 			popToken();
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
@@ -601,12 +612,12 @@ void decl()
 			popToken();
 			cToken = topToken();
 
-			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
 			}
 
-			ptrTop->put(cToken.lexeme, INT);
+			ptrTop->put(toLowercase(cToken.lexeme), INT);
 			popToken();
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
@@ -624,12 +635,12 @@ void decl()
 			popToken();
 			cToken = topToken();
 
-			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
 			}
 
-			ptrTop->put(cToken.lexeme, FLOAT);
+			ptrTop->put(toLowercase(cToken.lexeme), FLOAT);
 			popToken();
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
@@ -647,12 +658,12 @@ void decl()
 			popToken();
 			cToken = topToken();
 
-			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
 			}
 
-			ptrTop->put(cToken.lexeme, CHAR);
+			ptrTop->put(toLowercase(cToken.lexeme), CHAR);
 			popToken();
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
@@ -712,27 +723,27 @@ void factor()
 	popToken();
 	if ((";" == topToken().lexeme) || ("+" == topToken().lexeme) || ("-" == topToken().lexeme))
 	{
-		Symbol sym = ptrTop->get(cToken.lexeme);
+		Symbol sym = ptrTop->get(toLowercase(cToken.lexeme));
 		switch (sym)
 		{
 		case BOOL:
 			cout << cToken.lexeme << ":"
-				 << "bool" << ptrTop->getBlockNumber(cToken.lexeme)
+				 << "bool" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
 				 << "; ";
 			break;
 		case FLOAT:
 			cout << cToken.lexeme << ":"
-				 << "float" << ptrTop->getBlockNumber(cToken.lexeme)
+				 << "float" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
 				 << "; ";
 			break;
 		case INT:
 			cout << cToken.lexeme << ":"
-				 << "int" << ptrTop->getBlockNumber(cToken.lexeme)
+				 << "int" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
 				 << "; ";
 			break;
 		case CHAR:
 			cout << cToken.lexeme << ":"
-				 << "char" << ptrTop->getBlockNumber(cToken.lexeme)
+				 << "char" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
 				 << "; ";
 			break;
 		case null:
