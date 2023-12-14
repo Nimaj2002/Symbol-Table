@@ -18,12 +18,8 @@ enum TokenType
 	END,
 	KEYWORD,	 // int, char, float, bool
 	PUNCTUATION, // {, }, ;,
-	VARIABLES,	 // variables
+	IDENTIFIERS, // variables
 	ENDOFFILE,
-	BOOL,
-	FLOAT,
-	INT,
-	CHAR
 };
 // Token structure
 struct Token
@@ -33,16 +29,29 @@ struct Token
 };
 // storing tokens
 deque<Token> TOKENS;
+Token cToken;
 
 ifstream File;
 int blockNumber, errorCode;
 int lineNumber = 1;
+Env top;
+Env *ptrTop = &top;
 // ------------------------------------
 
 void detectError(int errorCode);
 bool isCharNum(char ch);
 void tokenLoader();
-Token getToken();
+void beginEnd();
+Token topToken();
+void popToken();
+void block();
+void decls();
+void decl();
+void stmts();
+void stmt();
+void factor();
+void rest1();
+void rest2();
 
 int main(int argc, char *argv[])
 {
@@ -61,15 +70,13 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE); // Return an error code
 	}
 	File.open(filePath);
-
-	while (3 != errorCode)
-	{
-		Token token = getToken();
-		cout << token.id << " -- " << token.lexeme << endl;
-	}
-
-	cout << lineNumber << endl;
-
+	beginEnd();
+	// while (cToken.id != ENDOFFILE)
+	// {
+	// 	cToken = topToken();
+	// 	cout << cToken.id << " -- " << cToken.lexeme << endl;
+	// 	popToken();
+	// }
 	File.close();
 	return 0;
 }
@@ -96,8 +103,8 @@ void detectError(int errorNumber)
 	case 2:
 	{
 		errorCode = 2;
-		cout << "ND " << lineNumber << endl;
-		exit(EXIT_FAILURE);
+		cout << "ND" << lineNumber << "; ";
+		return;
 	}
 	case 3:
 	{
@@ -172,6 +179,22 @@ void tokenLoader()
 			TOKENS.push_back(token);
 			break;
 		}
+		case '-':
+		{
+			Token token;
+			token.id = PUNCTUATION;
+			token.lexeme = "-";
+			TOKENS.push_back(token);
+			break;
+		}
+		case '+':
+		{
+			Token token;
+			token.id = PUNCTUATION;
+			token.lexeme = "+";
+			TOKENS.push_back(token);
+			break;
+		}
 		case '/':
 		{
 			head = File.get();
@@ -230,6 +253,7 @@ void tokenLoader()
 
 			if (isdigit(head)) // checks if token is not starting with integer
 			{
+				cout << "3" << endl;
 				detectError(1);
 				return;
 			}
@@ -245,6 +269,7 @@ void tokenLoader()
 					{
 						if (TOKENSIZE - 1 == i) // checking if words does not surpass the TOKENSIZE
 						{
+							cout << "4" << endl;
 							detectError(1);
 							return;
 						}
@@ -271,7 +296,7 @@ void tokenLoader()
 							}
 							else
 							{
-								token.id = VARIABLES; // variables
+								token.id = IDENTIFIERS; // variables
 							}
 							TOKENS.push_back(token);
 						}
@@ -314,6 +339,23 @@ void tokenLoader()
 								TOKENS.push_back(token);
 								break;
 							}
+							else if ('-' == head)
+							{
+								Token token;
+								token.id = PUNCTUATION;
+								token.lexeme = "-";
+								TOKENS.push_back(token);
+								break;
+							}
+							else if ('-' == head)
+							{
+								Token token;
+								token.id = PUNCTUATION;
+								token.lexeme = "+";
+								TOKENS.push_back(token);
+								break;
+							}
+
 							else if ('/' == head)
 							{
 								head = File.get();
@@ -374,9 +416,25 @@ void tokenLoader()
 		}
 	}
 }
-Token getToken()
+Token topToken()
 {
 returnToken:
+{
+	if (!TOKENS.empty())
+	{
+		Token t = TOKENS.front();
+		return t;
+	}
+	else
+	{
+		tokenLoader();
+		goto returnToken;
+	}
+}
+}
+void popToken()
+{
+tokenpoper:
 {
 	if (!TOKENS.empty())
 	{
@@ -385,17 +443,313 @@ returnToken:
 		{
 			detectError(3);
 			TOKENS.pop_front();
-			return t;
+			return;
 		}
 		else
 		{
-			return t;
+			return;
 		}
 	}
 	else
 	{
 		tokenLoader();
-		goto returnToken;
+		goto tokenpoper;
 	}
 }
+}
+void beginEnd()
+{
+	cToken = topToken();
+	if (BEGIN != cToken.id)
+	{
+		cout << "6" << endl;
+		detectError(1);
+	}
+	else
+	{
+		cout << "begin ";
+		popToken();
+		// cout << "enterblock" << endl;
+		block();
+	}
+	cToken = topToken(); // finding end
+	if (END != cToken.id)
+	{
+		cout << "7" << endl;
+		detectError(1);
+	}
+	else
+	{
+		cout << "end" << endl;
+		popToken();
+	}
+	return;
+}
+
+void block()
+{
+	cToken = topToken();
+	if (PUNCTUATION != cToken.id && "{" != cToken.lexeme)
+	{
+		cout << "8" << endl;
+		detectError(1);
+	}
+	else
+	{
+		cout << "{ ";
+		popToken();
+		blockNumber++;
+
+		Env *saved = ptrTop;
+		Env top(blockNumber, saved);
+		ptrTop = &top;
+
+		cToken = topToken();
+		if (KEYWORD == cToken.id)
+		{
+			// cout << "enterdecls" << endl;
+			decls();
+		}
+		cToken = topToken();
+		if ((IDENTIFIERS == cToken.id) || ("{" == cToken.lexeme) || (";" == cToken.lexeme))
+		{
+			// cout << "enterstmts" << endl;
+			stmts();
+		}
+
+		cToken = topToken();
+		if ((PUNCTUATION == cToken.id))
+		{
+
+			if ("}" == cToken.lexeme)
+			{
+				popToken();
+				blockNumber--;
+				ptrTop = saved;
+				cout << "} ";
+				return;
+			}
+			else
+			{
+				cout << "9" << endl;
+				detectError(1);
+			}
+		}
+	}
+	return;
+}
+
+void decls()
+{
+	rest1();
+	return;
+}
+void rest1()
+{
+	cToken = topToken();
+	if (KEYWORD == cToken.id)
+	{
+		decl();
+		rest1();
+		return;
+	}
+	else
+	{
+		return;
+	}
+}
+void decl()
+{
+	cToken = topToken();
+	if (KEYWORD == cToken.id)
+	{
+		if ("bool" == cToken.lexeme)
+		{
+			popToken();
+			cToken = topToken();
+
+			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			{
+				cout << "10" << endl;
+				detectError(1);
+			}
+
+			ptrTop->put(cToken.lexeme, BOOL);
+			popToken();
+			cToken = topToken();
+			if (";" != cToken.lexeme) // handeling ; after declaration
+			{
+				cout << "11" << endl;
+				detectError(1);
+			}
+			else
+			{
+				popToken();
+				return;
+			}
+		}
+		if ("int" == cToken.lexeme)
+		{
+			popToken();
+			cToken = topToken();
+
+			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			{
+				cout << "12" << endl;
+				detectError(1);
+			}
+
+			ptrTop->put(cToken.lexeme, INT);
+			popToken();
+			cToken = topToken();
+			if (";" != cToken.lexeme) // handeling ; after declaration
+			{
+				cout << "13" << endl;
+				detectError(1);
+			}
+			else
+			{
+				popToken();
+				return;
+			}
+		}
+		if ("float" == cToken.lexeme)
+		{
+			popToken();
+			cToken = topToken();
+
+			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			{
+				cout << "14" << endl;
+				detectError(1);
+			}
+
+			ptrTop->put(cToken.lexeme, FLOAT);
+			popToken();
+			cToken = topToken();
+			if (";" != cToken.lexeme) // handeling ; after declaration
+			{
+				cout << "15" << endl;
+				detectError(1);
+			}
+			else
+			{
+				popToken();
+				return;
+			}
+		}
+		if ("char" == cToken.lexeme)
+		{
+			popToken();
+			cToken = topToken();
+
+			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
+			{
+				cout << "16" << endl;
+				detectError(1);
+			}
+
+			ptrTop->put(cToken.lexeme, CHAR);
+			popToken();
+			cToken = topToken();
+			if (";" != cToken.lexeme) // handeling ; after declaration
+			{
+				cout << "17" << endl;
+				detectError(1);
+			}
+			else
+			{
+				popToken();
+				return;
+			}
+		}
+	}
+}
+
+void stmts()
+{
+	rest2();
+	return;
+}
+
+void rest2()
+{
+	cToken = topToken();
+	if ((IDENTIFIERS == cToken.id) || ("{" == cToken.lexeme) || (";" == cToken.lexeme))
+	{
+		stmt();
+		rest2();
+		return;
+	}
+	else
+	{
+		return;
+	}
+}
+
+void stmt()
+{
+	cToken = topToken();
+	if ("{" == cToken.lexeme)
+	{
+		block();
+		return;
+	}
+	else if (";" == cToken.lexeme)
+	{
+		cout << "; ";
+		popToken();
+		return;
+	}
+	else if (IDENTIFIERS == cToken.id)
+	{
+		factor();
+		return;
+	}
+}
+
+void factor()
+{
+	cToken = topToken();
+	popToken();
+	if (";" != topToken().lexeme)
+	{
+		cout << "18" << endl;
+		detectError(1);
+	}
+	else
+	{
+		Symbol sym = ptrTop->get(cToken.lexeme);
+		switch (sym)
+		{
+		case BOOL:
+			cout << cToken.lexeme << ":"
+				 << "bool"
+				 << "; ";
+			popToken();
+			return;
+		case FLOAT:
+			cout << cToken.lexeme << ":"
+				 << "float"
+				 << "; ";
+			popToken();
+			return;
+		case INT:
+			cout << cToken.lexeme << ":"
+				 << "int"
+				 << "; ";
+			popToken();
+			return;
+		case CHAR:
+			cout << cToken.lexeme << ":"
+				 << "char"
+				 << "; ";
+			popToken();
+			return;
+		case null:
+			cout << cToken.lexeme << ":";
+			detectError(2);
+		}
+	}
+	return;
 }

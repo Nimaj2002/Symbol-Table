@@ -1,20 +1,28 @@
 #pragma once
 
-#include <stdio.h>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
 using namespace std;
-
+enum Symbol
+{
+    BOOL,
+    INT,
+    FLOAT,
+    CHAR,
+    null
+};
 class Env
 {
 private:
-    std::unordered_map<string, string> table;
+    unordered_map<string, Symbol> table;
     Env *prev;
     int block = 0;
 
 public:
-    Env(int block = 0, Env *p = nullptr) : prev(p) {}
-    void put(string s, const string sym);
-    string get(string s);
+    Env(int block = 0, Env *p = nullptr);
+    void put(string s, Symbol sym);
+    Symbol get(string s);
+    bool isInCurrentTop(string s);
 };
