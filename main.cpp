@@ -50,6 +50,7 @@ void decl();
 void stmts();
 void stmt();
 void factor();
+void rest0();
 void rest1();
 void rest2();
 
@@ -253,7 +254,6 @@ void tokenLoader()
 
 			if (isdigit(head)) // checks if token is not starting with integer
 			{
-				cout << "3" << endl;
 				detectError(1);
 				return;
 			}
@@ -269,7 +269,6 @@ void tokenLoader()
 					{
 						if (TOKENSIZE - 1 == i) // checking if words does not surpass the TOKENSIZE
 						{
-							cout << "4" << endl;
 							detectError(1);
 							return;
 						}
@@ -462,20 +461,17 @@ void beginEnd()
 	cToken = topToken();
 	if (BEGIN != cToken.id)
 	{
-		cout << "6" << endl;
 		detectError(1);
 	}
 	else
 	{
 		cout << "begin ";
 		popToken();
-		// cout << "enterblock" << endl;
-		block();
+		rest0();
 	}
 	cToken = topToken(); // finding end
 	if (END != cToken.id)
 	{
-		cout << "7" << endl;
 		detectError(1);
 	}
 	else
@@ -485,13 +481,26 @@ void beginEnd()
 	}
 	return;
 }
-
+void rest0()
+{
+	cToken = topToken();
+	if (KEYWORD == cToken.id)
+	{
+		decls();
+		block();
+		return;
+	}
+	else
+	{
+		block();
+		return;
+	}
+}
 void block()
 {
 	cToken = topToken();
 	if (PUNCTUATION != cToken.id && "{" != cToken.lexeme)
 	{
-		cout << "8" << endl;
 		detectError(1);
 	}
 	else
@@ -507,13 +516,11 @@ void block()
 		cToken = topToken();
 		if (KEYWORD == cToken.id)
 		{
-			// cout << "enterdecls" << endl;
 			decls();
 		}
 		cToken = topToken();
 		if ((IDENTIFIERS == cToken.id) || ("{" == cToken.lexeme) || (";" == cToken.lexeme))
 		{
-			// cout << "enterstmts" << endl;
 			stmts();
 		}
 
@@ -524,14 +531,13 @@ void block()
 			if ("}" == cToken.lexeme)
 			{
 				popToken();
-				blockNumber--;
+				// blockNumber--;
 				ptrTop = saved;
 				cout << "} ";
 				return;
 			}
 			else
 			{
-				cout << "9" << endl;
 				detectError(1);
 			}
 		}
@@ -570,7 +576,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "10" << endl;
 				detectError(1);
 			}
 
@@ -579,7 +584,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "11" << endl;
 				detectError(1);
 			}
 			else
@@ -595,7 +599,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "12" << endl;
 				detectError(1);
 			}
 
@@ -604,7 +607,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "13" << endl;
 				detectError(1);
 			}
 			else
@@ -620,7 +622,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "14" << endl;
 				detectError(1);
 			}
 
@@ -629,7 +630,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "15" << endl;
 				detectError(1);
 			}
 			else
@@ -645,7 +645,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "16" << endl;
 				detectError(1);
 			}
 
@@ -654,7 +653,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "17" << endl;
 				detectError(1);
 			}
 			else
@@ -671,7 +669,6 @@ void stmts()
 	rest2();
 	return;
 }
-
 void rest2()
 {
 	cToken = topToken();
@@ -686,7 +683,6 @@ void rest2()
 		return;
 	}
 }
-
 void stmt()
 {
 	cToken = topToken();
@@ -697,7 +693,6 @@ void stmt()
 	}
 	else if (";" == cToken.lexeme)
 	{
-		cout << "; ";
 		popToken();
 		return;
 	}
@@ -707,7 +702,6 @@ void stmt()
 		return;
 	}
 }
-
 void factor()
 {
 	cToken = topToken();
@@ -719,22 +713,22 @@ void factor()
 		{
 		case BOOL:
 			cout << cToken.lexeme << ":"
-				 << "bool"
+				 << "bool" << ptrTop->getBlockNumber(cToken.lexeme)
 				 << "; ";
 			break;
 		case FLOAT:
 			cout << cToken.lexeme << ":"
-				 << "float"
+				 << "float" << ptrTop->getBlockNumber(cToken.lexeme)
 				 << "; ";
 			break;
 		case INT:
 			cout << cToken.lexeme << ":"
-				 << "int"
+				 << "int" << ptrTop->getBlockNumber(cToken.lexeme)
 				 << "; ";
 			break;
 		case CHAR:
 			cout << cToken.lexeme << ":"
-				 << "char"
+				 << "char" << ptrTop->getBlockNumber(cToken.lexeme)
 				 << "; ";
 			break;
 		case null:
@@ -745,7 +739,6 @@ void factor()
 	}
 	else if (";" != topToken().lexeme)
 	{
-		cout << "18" << endl;
 		detectError(1);
 	}
 	else

@@ -1,0 +1,22 @@
+begin
+int X;
+{
+    int y;
+    x;
+    y;
+    {
+        char x;
+        x;
+    }
+    {
+        float x;
+        {
+            x;
+        }
+    }
+
+    int z;
+    z;
+
+}
+end

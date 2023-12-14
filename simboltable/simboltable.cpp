@@ -32,3 +32,16 @@ bool Env::isInCurrentTop(string s)
         return 0;
     }
 };
+
+int Env::getBlockNumber(string s)
+{
+    for (const Env *e = this; e != nullptr; e = e->prev)
+    {
+        auto it = e->table.find(s);
+        if (it != e->table.end())
+        {
+            return e->block;
+        }
+    }
+    return null;
+}

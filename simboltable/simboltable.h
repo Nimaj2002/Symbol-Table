@@ -25,4 +25,5 @@ public:
     void put(string s, Symbol sym);
     Symbol get(string s);
     bool isInCurrentTop(string s);
+    int getBlockNumber(string s);
 };
