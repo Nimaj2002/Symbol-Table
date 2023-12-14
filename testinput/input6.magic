@@ -1,22 +1,13 @@
 begin
 int X;
 {
-    int y;
-    x;
-    y;
+    int x;
+    x; 
     {
-        char x;
-        x;
-    }
-    {
-        float x;
-        {
-            x;
-        }
-    }
-
+        int u;
+        u;
+    }   
     int z;
     z;
-
 }
 end
