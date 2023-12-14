@@ -1,1 +1,1 @@
-Begin{Int x;x+2;}   End
+Begin{Int x;x+y;}   End

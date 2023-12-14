@@ -253,7 +253,6 @@ void tokenLoader()
 
 			if (isdigit(head)) // checks if token is not starting with integer
 			{
-				cout << "1" << endl;
 				detectError(1);
 				return;
 			}
@@ -269,7 +268,6 @@ void tokenLoader()
 					{
 						if (TOKENSIZE - 1 == i) // checking if words does not surpass the TOKENSIZE
 						{
-							cout << "2" << endl;
 							detectError(1);
 							return;
 						}
@@ -347,7 +345,7 @@ void tokenLoader()
 								TOKENS.push_back(token);
 								break;
 							}
-							else if ('-' == head)
+							else if ('+' == head)
 							{
 								Token token;
 								token.id = PUNCTUATION;
@@ -462,7 +460,6 @@ void beginEnd()
 	cToken = topToken();
 	if (BEGIN != cToken.id)
 	{
-		cout << "4" << endl;
 		detectError(1);
 	}
 	else
@@ -476,7 +473,6 @@ void beginEnd()
 	cToken = topToken(); // finding end
 	if (END != cToken.id)
 	{
-		cout << "5" << endl;
 		detectError(1);
 	}
 	else
@@ -506,7 +502,6 @@ void block()
 	cToken = topToken();
 	if (PUNCTUATION != cToken.id && "{" != cToken.lexeme)
 	{
-		cout << "6" << endl;
 		detectError(1);
 	}
 	else
@@ -547,7 +542,6 @@ void block()
 			}
 			else
 			{
-				cout << "6" << endl;
 				detectError(1);
 			}
 		}
@@ -586,7 +580,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "7" << endl;
 				detectError(1);
 			}
 
@@ -595,7 +588,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "8" << endl;
 				detectError(1);
 			}
 			else
@@ -611,7 +603,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "9" << endl;
 				detectError(1);
 			}
 
@@ -620,7 +611,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "10" << endl;
 				detectError(1);
 			}
 			else
@@ -636,7 +626,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "11" << endl;
 				detectError(1);
 			}
 
@@ -645,7 +634,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "12" << endl;
 				detectError(1);
 			}
 			else
@@ -661,7 +649,6 @@ void decl()
 
 			if (ptrTop->isInCurrentTop(cToken.lexeme)) // checking if there exists another id with other type
 			{
-				cout << "13" << endl;
 				detectError(1);
 			}
 
@@ -670,7 +657,6 @@ void decl()
 			cToken = topToken();
 			if (";" != cToken.lexeme) // handeling ; after declaration
 			{
-				cout << "14" << endl;
 				detectError(1);
 			}
 			else
@@ -724,7 +710,7 @@ void factor()
 {
 	cToken = topToken();
 	popToken();
-	if (";" == topToken().lexeme)
+	if ((";" == topToken().lexeme) || ("+" == topToken().lexeme) || ("-" == topToken().lexeme))
 	{
 		Symbol sym = ptrTop->get(cToken.lexeme);
 		switch (sym)
@@ -755,9 +741,8 @@ void factor()
 			break;
 		}
 	}
-	else if (";" != topToken().lexeme)
+	if (";" != topToken().lexeme)
 	{
-		cout << "15" << endl;
 		detectError(1);
 	}
 	else
