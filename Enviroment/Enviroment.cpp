@@ -1,4 +1,4 @@
-#include "simboltable.h"
+#include "Enviroment.h"
 
 Env::Env(int b, Env *p) : block(b), prev(p) {}
 

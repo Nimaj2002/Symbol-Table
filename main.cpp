@@ -6,7 +6,7 @@
 #include <deque>
 #include <cstring>
 #include <string>
-#include "./simboltable/simboltable.h"
+#include "./Enviroment/Enviroment.h"
 using namespace std;
 
 // ------------------------------------

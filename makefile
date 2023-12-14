@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall
 
 # Source files and executable name
-SRCS = main.cpp ./simboltable/simboltable.cpp
+SRCS = main.cpp ./Enviroment/Enviroment.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXEC = magic
 

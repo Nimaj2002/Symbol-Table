@@ -6,7 +6,12 @@ int X;
     {
         int u;
         u;
-    }   
+    }
+    {
+        bool x;
+        u;
+        x;
+    }
     int z;
     z;
 }
