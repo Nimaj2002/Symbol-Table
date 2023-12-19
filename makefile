@@ -2,7 +2,7 @@
 
 # Compiler and compiler flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall
+CXXFLAGS = -std=c++17
 
 # Source files and executable name
 SRCS = main.cpp ./Enviroment/Enviroment.cpp ./json/jsonsaver.cpp

@@ -18,7 +18,7 @@ void tableToJson(Env *top)
         }
         catch (json::parse_error &e)
         {
-            std::ofstream file(fileName, std::ios::trunc);
+            std::ofstream file(fileName, std::ios::trunc); // deleting data if exists wrongly
             file.close();
         }
     }

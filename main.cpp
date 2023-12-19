@@ -52,9 +52,9 @@ size_t arraySize = sizeof(punctuationMarks) / sizeof(char);
 ifstream File;
 int blockNumber, errorCode;
 int lineNumber = 1;
+stack<char> blockCounter;
 
 Env *ptrTop; // pointer to the topest enviroment(symbol table)
-deque<Env *> symbolTable;
 
 //------------------------/  FUNCTION DECLARATIONS  /------------------------/
 
@@ -100,6 +100,10 @@ int main(int argc, char *argv[])
 	// main	-> beginEnd
 	beginEnd();
 	File.close();
+	if (!blockCounter.empty())
+	{
+		detectError(1);
+	}
 
 	return 0;
 }
@@ -474,6 +478,7 @@ void beginEnd()
 	}
 	else
 	{
+		tableToJson(ptrTop);
 		cout << "end" << endl;
 		popToken();
 	}
@@ -481,12 +486,12 @@ void beginEnd()
 }
 void rest0()
 {
-	// rest0 -> decls block | block
+	// rest0 -> decls stmts | block
 	cToken = topToken();
 	if (KEYWORD == cToken.id)
 	{
 		decls();
-		block();
+		stmts();
 		return;
 	}
 	else
@@ -508,13 +513,15 @@ void block()
 		cout << "{ "; // '{'
 		popToken();
 		blockNumber++;
+		blockCounter.push('{');
 
 		Env *saved = ptrTop;
 		Env top(blockNumber, saved);
 		ptrTop = &top;
 
 		cToken = topToken();
-		while ("}" != cToken.lexeme)
+
+		do
 		{
 			if (KEYWORD == cToken.id)
 			{
@@ -525,7 +532,7 @@ void block()
 			{
 				stmts();
 			}
-		}
+		} while (("}" != cToken.lexeme) && (ENDOFFILE != cToken.id) && (END != cToken.id));
 
 		cToken = topToken();
 		if ((PUNCTUATION == cToken.id))
@@ -534,11 +541,12 @@ void block()
 			if ("}" == cToken.lexeme) // '}'
 			{
 				popToken();
+				blockCounter.pop();
 				// TODO save the data inside the Enviroment
 				tableToJson(ptrTop);
-
 				ptrTop = saved;
 				tableToJson(ptrTop);
+
 				cout << "} ";
 				return;
 			}
