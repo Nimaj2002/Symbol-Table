@@ -1,18 +1,14 @@
 begin
 int X;
 {
-    int x;
-    x; 
+    int y;
     {
-        int u;
-        u;
+        int z;
     }
     {
-        bool x;
-        u;
-        x;
+        bool w;
     }
-    int z;
-    z;
+
+    int a;
 }
 end

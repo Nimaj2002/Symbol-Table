@@ -6,7 +6,8 @@
 #include <deque>
 #include <cstring>
 #include <string>
-#include "./Enviroment/Enviroment.h"
+#include "./Enviroment/Enviroment.hpp"
+#include "json/jsonsaver.hpp"
 using namespace std;
 
 //-------------------------------/  GRAMMER  /--------------------------------/
@@ -56,6 +57,7 @@ deque<Env *> symbolTable;
 
 void detectError(int errorCode);
 bool isCharNum(char ch);
+string toLowercase(const string &input);
 void tokenLoader();
 Token topToken();
 void popToken();
@@ -573,7 +575,10 @@ void block()
 			{
 				popToken();
 				// TODO save the data inside the Enviroment
+				tableToJson(ptrTop);
+
 				ptrTop = saved;
+				tableToJson(ptrTop);
 				cout << "} ";
 				return;
 			}

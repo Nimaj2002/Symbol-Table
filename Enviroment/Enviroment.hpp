@@ -16,9 +16,8 @@ enum Symbol
 class Env
 {
 private:
-    Env *prev;
-
 public:
+    Env *prev;
     unordered_map<string, Symbol> table;
     int block = 0;
     Env(int block = 0, Env *p = nullptr);

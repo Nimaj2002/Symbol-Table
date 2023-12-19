@@ -5,9 +5,9 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall
 
 # Source files and executable name
-SRCS = main.cpp ./Enviroment/Enviroment.cpp
+SRCS = main.cpp ./Enviroment/Enviroment.cpp ./json/jsonsaver.cpp
 OBJS = $(SRCS:.cpp=.o)
-EXEC = magic
+EXEC = magician
 
 # Default target (the one that will be built if you just run 'make')
 all: $(EXEC)
