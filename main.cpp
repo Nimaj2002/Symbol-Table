@@ -46,6 +46,9 @@ struct Token // Token structure
 deque<Token> TOKENS; // storing tokens
 Token cToken;		 // Current Token
 
+char punctuationMarks[] = {'{', '}', ';', '+', '-'};
+size_t arraySize = sizeof(punctuationMarks) / sizeof(char);
+
 ifstream File;
 int blockNumber, errorCode;
 int lineNumber = 1;
@@ -58,6 +61,7 @@ deque<Env *> symbolTable;
 void detectError(int errorCode);
 bool isCharNum(char ch);
 string toLowercase(const string &input);
+bool isCharInArray(char target, const char *charArray, size_t arraySize);
 void tokenLoader();
 Token topToken();
 void popToken();
@@ -91,6 +95,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE); // Return an error code
 	}
 
+	std::ofstream file("data.json", std::ios::trunc);
 	File.open(filePath);
 	// main	-> beginEnd
 	beginEnd();
@@ -152,6 +157,17 @@ string toLowercase(const string &input)
 			  { return tolower(c); });
 	return result;
 }
+bool isCharInArray(char target, const char *charArray, size_t arraySize)
+{
+	for (size_t i = 0; i < arraySize; ++i)
+	{
+		if (charArray[i] == target)
+		{
+			return true; // Character found in the array
+		}
+	}
+	return false; // Character not found in the array
+}
 void tokenLoader()
 {
 	// fills the deque with tokens
@@ -173,56 +189,31 @@ void tokenLoader()
 		}
 
 		char head = File.get(); // gets a char from the file
-		switch (head)			// checking type of each char and saving token in deque
+								// checking type of each char and saving token in deque
+		if ('\n' == head)
 		{
-		case '\n':
+
 			lineNumber++;
 			break;
-		case '\t':
+		}
+
+		else if ('\t' == head)
+		{
 			break;
-		case ' ':
+		}
+		else if (' ' == head)
+		{
 			break;
-		case '{':
+		}
+		else if (isCharInArray(head, punctuationMarks, arraySize))
 		{
 			Token token;
 			token.id = PUNCTUATION;
-			token.lexeme = "{";
+			token.lexeme = head;
 			TOKENS.push_back(token);
 			break;
 		}
-		case '}':
-		{
-			Token token;
-			token.id = PUNCTUATION;
-			token.lexeme = "}";
-			TOKENS.push_back(token);
-			break;
-		}
-		case ';':
-		{
-			Token token;
-			token.id = PUNCTUATION;
-			token.lexeme = ";";
-			TOKENS.push_back(token);
-			break;
-		}
-		case '-':
-		{
-			Token token;
-			token.id = PUNCTUATION;
-			token.lexeme = "-";
-			TOKENS.push_back(token);
-			break;
-		}
-		case '+':
-		{
-			Token token;
-			token.id = PUNCTUATION;
-			token.lexeme = "+";
-			TOKENS.push_back(token);
-			break;
-		}
-		case '/': // detecting the comments
+		else if ('/' == head) // detecting the comments
 		{
 			head = File.get();
 			switch (head) // checking if comment is // or /* */
@@ -267,7 +258,8 @@ void tokenLoader()
 			}
 			break;
 		}
-		default: // if head was not a punctuation or (newline, space, tab)
+		else
+		{ // if head was not a punctuation or (newline, space, tab)
 
 			if (-1 == static_cast<int>(head)) // char before end of file wich has asci code of -1
 			{
@@ -347,47 +339,14 @@ void tokenLoader()
 							{
 								break;
 							}
-							else if (';' == head)
+							else if (isCharInArray(head, punctuationMarks, arraySize))
 							{
 								Token token;
 								token.id = PUNCTUATION;
-								token.lexeme = ";";
+								token.lexeme = head;
 								TOKENS.push_back(token);
 								break;
 							}
-							else if ('{' == head)
-							{
-								Token token;
-								token.id = PUNCTUATION;
-								token.lexeme = "{";
-								TOKENS.push_back(token);
-								break;
-							}
-							else if ('}' == head)
-							{
-								Token token;
-								token.id = PUNCTUATION;
-								token.lexeme = "}";
-								TOKENS.push_back(token);
-								break;
-							}
-							else if ('-' == head)
-							{
-								Token token;
-								token.id = PUNCTUATION;
-								token.lexeme = "-";
-								TOKENS.push_back(token);
-								break;
-							}
-							else if ('+' == head)
-							{
-								Token token;
-								token.id = PUNCTUATION;
-								token.lexeme = "+";
-								TOKENS.push_back(token);
-								break;
-							}
-
 							else if ('/' == head)
 							{
 								head = File.get();
@@ -448,6 +407,7 @@ void tokenLoader()
 		}
 	}
 }
+
 Token topToken()
 {
 	// returns the first token availible

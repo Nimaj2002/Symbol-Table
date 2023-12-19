@@ -2,16 +2,25 @@
 
 using json = nlohmann::json;
 ifstream outputFile;
+string fileName = "data.json";
 
 void tableToJson(Env *top)
 {
     json j;
 
-    std::ifstream inputFile("data.json"); // Open the existing file
+    std::ifstream inputFile(fileName); // Open the existing file
     if (inputFile.good())
     {
-        inputFile >> j; // Read existing JSON data from the file
-        inputFile.close();
+        try
+        {
+            inputFile >> j; // Read existing JSON data from the file
+            inputFile.close();
+        }
+        catch (json::parse_error &e)
+        {
+            std::ofstream file(fileName, std::ios::trunc);
+            file.close();
+        }
     }
 
     // string bl = to_string(prev->block);
@@ -37,7 +46,7 @@ void tableToJson(Env *top)
     }
 
     // Write updated JSON back to the file
-    std::ofstream outputFile("data.json");
+    std::ofstream outputFile(fileName);
     if (outputFile.is_open())
     {
         outputFile << j.dump(4); // Write JSON to the file with indentation of 4 spaces
