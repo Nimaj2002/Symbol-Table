@@ -2,7 +2,7 @@
 
 using json = nlohmann::json;
 ifstream outputFile;
-string fileName = "data.json";
+string fileName = "tableVisualizer/data.json";
 
 void tableToJson(Env *top)
 {

@@ -95,16 +95,25 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE); // Return an error code
 	}
 
-	std::ofstream file("data.json", std::ios::trunc);
+	std::ofstream file("tableVisualizer/data.json", std::ios::trunc);
 	File.open(filePath);
 	// main	-> beginEnd
 	beginEnd();
 	File.close();
+	
+	// checking if there were matching { and }
 	if (!blockCounter.empty())
 	{
 		detectError(1);
 	}
 
+	// illustration
+	char y;
+	cout << "Do you want illustrations?(y/n)\t";
+	cin >> y;
+	if ('y' == y || 'Y' == y){
+		system("python3 tableVisualizer/visualizer.py");
+	}
 	return 0;
 }
 

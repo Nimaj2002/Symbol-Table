@@ -3,7 +3,8 @@ int X;
 {
     int y;
     {
-        int z;
+        x;
+        {int b;}
     }
     {
         bool w;
