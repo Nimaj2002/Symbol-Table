@@ -24,7 +24,7 @@ void tableToJson(Env *top)
     }
 
     // string bl = to_string(prev->block);
-    if ((top->table.empty() != true))
+    if (!top->table.empty())
     {
         for (auto pair : top->table)
         {
@@ -42,7 +42,14 @@ void tableToJson(Env *top)
     }
     else
     {
-        return;
+        if (top->prev == nullptr)
+        {
+            j[to_string(top->block)]["prev"] = "null";
+        }
+        else
+        {
+            j[to_string(top->block)]["prev"] = to_string(top->prev->block);
+        }
     }
 
     // Write updated JSON back to the file
