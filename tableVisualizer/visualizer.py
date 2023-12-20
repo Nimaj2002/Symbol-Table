@@ -23,7 +23,6 @@ def draw_tree(data):
         else:
             label = "{"
             label += f"<TR><TD>Block</TD><TD>{key}</TD></TR>"
-            label += f"<TR><TD>ND</TD></TR>"
             label += "}"
             dot.node(
                 key, f'''<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">{label}</TABLE>>''')
