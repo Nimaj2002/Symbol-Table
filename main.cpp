@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 	cout << "Do you want illustrations?(y/n)\t";
 	cin >> y;
 	if ('y' == y || 'Y' == y){
-		system("python3 tableVisualizer/visualizer.py");
+		system("python tableVisualizer/visualizer.py");
 	}
 	return 0;
 }
