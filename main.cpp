@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	// main	-> beginEnd
 	beginEnd();
 	File.close();
-	
+
 	// checking if there were matching { and }
 	if (!blockCounter.empty())
 	{
@@ -111,7 +111,8 @@ int main(int argc, char *argv[])
 	char y;
 	cout << "Do you want illustrations?(y/n)\t";
 	cin >> y;
-	if ('y' == y || 'Y' == y){
+	if ('y' == y || 'Y' == y)
+	{
 		system("python tableVisualizer/visualizer.py");
 	}
 	return 0;
@@ -599,7 +600,10 @@ void decl()
 		{
 			popToken(); // pops bool
 			cToken = topToken();
-
+			if (cToken.id == KEYWORD)
+			{
+				detectError(1);
+			}
 			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checks if there exists another id with another type
 			{
 				detectError(1);
@@ -623,7 +627,10 @@ void decl()
 		{
 			popToken();
 			cToken = topToken();
-
+			if (cToken.id == KEYWORD)
+			{
+				detectError(1);
+			}
 			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
@@ -647,7 +654,10 @@ void decl()
 		{
 			popToken();
 			cToken = topToken();
-
+			if (cToken.id == KEYWORD)
+			{
+				detectError(1);
+			}
 			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
@@ -671,7 +681,10 @@ void decl()
 		{
 			popToken();
 			cToken = topToken();
-
+			if (cToken.id == KEYWORD)
+			{
+				detectError(1);
+			}
 			if (ptrTop->isInCurrentTop(toLowercase(cToken.lexeme))) // checking if there exists another id with other type
 			{
 				detectError(1);
