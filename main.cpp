@@ -352,97 +352,10 @@ void tokenLoader()
 							TOKENS.push_back(token);
 						}
 
-						{ // checking the next character of the file (following char of the last token)
-							if ('\n' == head)
-							{
-								lineNumber++;
-								break;
-							}
-							else if ('\t' == head)
-							{
-								break;
-							}
-							else if (' ' == head)
-							{
-								break;
-							}
-							else if (!isCharNum(head))
-							{
-								if ('/' == head) // detecting the comments
-								{
-									head = File.get();
-									switch (head) // checking if comment is // or /* */
-									{
-									case '/': // comment type is //
-									{
-										do // skips everything until \n
-										{
-											head = File.get();
-											if ('\n' == head)
-											{
-												lineNumber++;
-												break;
-											}
-										} while ('\n' != head);
-
-										break;
-									}
-									case '*': // coment type is /*
-									caseStar2:
-									{
-										do // skips everything until *
-										{
-											head = File.get();
-											if ('\n' == head)
-											{
-												lineNumber++;
-											}
-										} while ('*' != head);
-										head = File.get(); // gets following character of *
-										switch (head)
-										{
-										case '/': // if following char of * is / then gets out
-											break;
-										default: // if following char is not / then repeates this process
-											goto caseStar2;
-										}
-									}
-									default: // comment may lead to end of file
-											 // todo
-									{
-										{
-											Token token;
-											token.id = PUNCTUATION;
-											token.lexeme = '/';
-											TOKENS.push_back(token);
-											break;
-										}
-										detectError(3);
-										int read_pos = File.tellg();
-										File.seekg(read_pos - 1);
-										break;
-									}
-									}
-									break;
-								}
-								else
-								{
-									Token token;
-									token.id = PUNCTUATION;
-									token.lexeme = head;
-									TOKENS.push_back(token);
-									break;
-								}
-							}
-
-							else if (-1 == static_cast<int>(head)) // char befor end of file wich has asci code of -1
-							{
-								Token token;
-								token.id = ENDOFFILE;
-								token.lexeme = "EOF";
-								TOKENS.push_back(token);
-								return;
-							}
+						{
+							int read_pos = File.tellg();
+							File.seekg(read_pos - 1);
+							return;
 						}
 					}
 				}
