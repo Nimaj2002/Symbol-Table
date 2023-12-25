@@ -46,9 +46,6 @@ struct Token // Token structure
 deque<Token> TOKENS; // storing tokens
 Token cToken;		 // Current Token
 
-char punctuationMarks[] = {'{', '}', ';', '+', '-'};
-size_t arraySize = sizeof(punctuationMarks) / sizeof(char);
-
 ifstream File;
 int blockNumber, errorCode;
 int lineNumber = 1;
@@ -75,6 +72,7 @@ void stmts();
 void rest2();
 void stmt();
 void factor();
+void ID();
 
 //----------------------------------------------------------------------------/
 
@@ -219,58 +217,73 @@ void tokenLoader()
 		{
 			break;
 		}
-		else if (isCharInArray(head, punctuationMarks, arraySize))
+		else if (!isCharNum(head))
 		{
-			Token token;
-			token.id = PUNCTUATION;
-			token.lexeme = head;
-			TOKENS.push_back(token);
-			break;
-		}
-		else if ('/' == head) // detecting the comments
-		{
-			head = File.get();
-			switch (head) // checking if comment is // or /* */
+			if ('/' == head) // detecting the comments
 			{
-			case '/': // comment type is //
-			{
-				do // skips everything until \n
+				head = File.get();
+				switch (head) // checking if comment is // or /* */
 				{
-					head = File.get();
-					if ('\n' == head)
+				case '/': // comment type is //
+				{
+					do // skips everything until \n
 					{
-						lineNumber++;
+						head = File.get();
+						if ('\n' == head)
+						{
+							lineNumber++;
+							break;
+						}
+					} while ('\n' != head);
+
+					break;
+				}
+				case '*': // coment type is /*
+				caseStar:
+				{
+					do // skips everything until *
+					{
+						head = File.get();
+						if ('\n' == head)
+						{
+							lineNumber++;
+						}
+					} while ('*' != head);
+					head = File.get(); // gets following character of *
+					switch (head)
+					{
+					case '/': // if following char of * is / then gets out
+						return;
+					default: // if following char is not / then repeates this process
+						goto caseStar;
+					}
+				}
+				default: // comment may lead to end of file
+						 // todo
+				{
+					{
+						Token token;
+						token.id = PUNCTUATION;
+						token.lexeme = '/';
+						TOKENS.push_back(token);
 						break;
 					}
-				} while ('\n' != head);
-
-				break;
-			}
-			case '*': // coment type is /*
-			caseStar:
-			{
-				do // skips everything until *
-				{
-					head = File.get();
-					if ('\n' == head)
-					{
-						lineNumber++;
-					}
-				} while ('*' != head);
-				head = File.get(); // gets following character of *
-				switch (head)
-				{
-				case '/': // if following char of * is / then gets out
+					int read_pos = File.tellg();
+					File.seekg(read_pos - 1);
+					detectError(3);
 					break;
-				default: // if following char is not / then repeates this process
-					goto caseStar;
 				}
-			}
-			default: // comment may lead to end of file
-				detectError(3);
+				}
 				break;
 			}
-			break;
+			else
+			{
+				Token token;
+				token.id = PUNCTUATION;
+				token.lexeme = head;
+				TOKENS.push_back(token);
+				break;
+			}
 		}
 		else
 		{ // if head was not a punctuation or (newline, space, tab)
@@ -353,59 +366,75 @@ void tokenLoader()
 							{
 								break;
 							}
-							else if (isCharInArray(head, punctuationMarks, arraySize))
+							else if (!isCharNum(head))
 							{
-								Token token;
-								token.id = PUNCTUATION;
-								token.lexeme = head;
-								TOKENS.push_back(token);
-								break;
-							}
-							else if ('/' == head)
-							{
-								head = File.get();
-								switch (head) // checking if comment is // or /* */
+								if ('/' == head) // detecting the comments
 								{
-								case '/':
-								{
-									do // skips everything until \n
+									head = File.get();
+									switch (head) // checking if comment is // or /* */
 									{
-										head = File.get();
-										if ('\n' == head)
+									case '/': // comment type is //
+									{
+										do // skips everything until \n
 										{
-											lineNumber++;
+											head = File.get();
+											if ('\n' == head)
+											{
+												lineNumber++;
+												break;
+											}
+										} while ('\n' != head);
+
+										break;
+									}
+									case '*': // coment type is /*
+									caseStar2:
+									{
+										do // skips everything until *
+										{
+											head = File.get();
+											if ('\n' == head)
+											{
+												lineNumber++;
+											}
+										} while ('*' != head);
+										head = File.get(); // gets following character of *
+										switch (head)
+										{
+										case '/': // if following char of * is / then gets out
+											break;
+										default: // if following char is not / then repeates this process
+											goto caseStar2;
+										}
+									}
+									default: // comment may lead to end of file
+											 // todo
+									{
+										{
+											Token token;
+											token.id = PUNCTUATION;
+											token.lexeme = '/';
+											TOKENS.push_back(token);
 											break;
 										}
-									} while ('\n' != head);
-
-									break;
-								}
-								case '*':
-								caseStar2:
-								{
-									do // skipps everything until *
-									{
-										head = File.get();
-										if ('\n' == head)
-										{
-											lineNumber++;
-										}
-									} while ('*' != head);
-									head = File.get(); // gets following character of *
-									switch (head)
-									{
-									case '/': // if following char of * is / then gets out
+										detectError(3);
+										int read_pos = File.tellg();
+										File.seekg(read_pos - 1);
 										break;
-									default: // if following char is not / then repeates this process
-										goto caseStar2;
 									}
-								}
-								default: // checking end of file
-									detectError(3);
+									}
 									break;
 								}
-								break;
+								else
+								{
+									Token token;
+									token.id = PUNCTUATION;
+									token.lexeme = head;
+									TOKENS.push_back(token);
+									break;
+								}
 							}
+
 							else if (-1 == static_cast<int>(head)) // char befor end of file wich has asci code of -1
 							{
 								Token token;
@@ -754,36 +783,13 @@ void factor()
 	cToken = topToken();
 	popToken();
 
-	if ((";" == topToken().lexeme) || ("+" == topToken().lexeme) || ("-" == topToken().lexeme)) // handeling +/-
+	if (PUNCTUATION != topToken().id)
 	{
-		Symbol sym = ptrTop->get(toLowercase(cToken.lexeme));
-		switch (sym)
-		{
-		case BOOL:
-			cout << cToken.lexeme << ":"
-				 << "bool" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
-				 << "; ";
-			break;
-		case FLOAT:
-			cout << cToken.lexeme << ":"
-				 << "float" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
-				 << "; ";
-			break;
-		case INT:
-			cout << cToken.lexeme << ":"
-				 << "int" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
-				 << "; ";
-			break;
-		case CHAR:
-			cout << cToken.lexeme << ":"
-				 << "char" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
-				 << "; ";
-			break;
-		case null:
-			cout << cToken.lexeme << ":";
-			detectError(2);
-			break;
-		}
+		detectError(1);
+	}
+	else if (PUNCTUATION == topToken().id)
+	{
+		ID();
 	}
 
 	if (";" != topToken().lexeme)
@@ -796,4 +802,36 @@ void factor()
 	}
 
 	return;
+}
+
+void ID()
+{
+	Symbol sym = ptrTop->get(toLowercase(cToken.lexeme));
+	switch (sym)
+	{
+	case BOOL:
+		cout << cToken.lexeme << ":"
+			 << "bool" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
+			 << "; ";
+		break;
+	case FLOAT:
+		cout << cToken.lexeme << ":"
+			 << "float" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
+			 << "; ";
+		break;
+	case INT:
+		cout << cToken.lexeme << ":"
+			 << "int" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
+			 << "; ";
+		break;
+	case CHAR:
+		cout << cToken.lexeme << ":"
+			 << "char" << ptrTop->getBlockNumber(toLowercase(cToken.lexeme))
+			 << "; ";
+		break;
+	case null:
+		cout << cToken.lexeme << ":";
+		detectError(2);
+		break;
+	}
 }
